@@ -1,5 +1,9 @@
 {
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/src"
-    ]
+        "${workspaceFolder}/src/bsplin"
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    }
 }

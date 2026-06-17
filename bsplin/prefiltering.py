@@ -2,12 +2,13 @@ import abc
 from collections.abc import Callable, Sequence
 import math
 
-from ds import Matrix
+from bsplin.ds import Matrix
 
 
 type CausalPreFilter = Matrix[float]
 
 Z_1 = -0.2679491924311228
+LAMBDA = (1 - Z_1) * (1 - (1 / Z_1))
 
 
 class PreFilterVectorBuilder(abc.ABC):
@@ -85,7 +86,7 @@ class CausalPreFilterVectorBuilder(PreFilterVectorBuilder):
         max_k = int(math.log10(self.__class__.PRECISION) / math.log10(abs(Z_1)))
 
         for k in range(max_k + 1):
-            basis_coef += intensity_vector[k % self._dimensionality] * (Z_1**k)
+            basis_coef += LAMBDA * intensity_vector[k % self._dimensionality] * (Z_1**k)
 
         return basis_coef
 
@@ -93,7 +94,7 @@ class CausalPreFilterVectorBuilder(PreFilterVectorBuilder):
         self._curr_idx += 1
 
     def _calc_next_coef(self, next_intensity: float) -> float:
-        return next_intensity + Z_1 * self._coeffs[self._curr_idx - 1]
+        return (LAMBDA * next_intensity) + Z_1 * self._coeffs[self._curr_idx - 1]
 
 
 class AntiCausalPreFilterVectorBuilder(PreFilterVectorBuilder):
@@ -131,7 +132,7 @@ class AntiCausalPreFilterVectorBuilder(PreFilterVectorBuilder):
     def _calc_basis_coefficient(self, intensity_vector: Sequence[float]) -> float:
         del intensity_vector
 
-        first_factor = Z_1 / (1 - Z_1**2)
+        first_factor = Z_1 / (Z_1**2 - 1)
         snd_factor = (
             self.__causal_filter_vec[self._curr_idx]
             + Z_1 * self.__causal_filter_vec[self._curr_idx - 1]
